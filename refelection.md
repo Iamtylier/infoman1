@@ -1,0 +1,5 @@
+I think MySQL is better than using many separate files because all the data can be kept in one place. If we use separate files, some information can be repeated, lost, or become different from one file to another. With MySQL, it is easier to add, find, and change information. We can also use SQL to get the information we need. MySQL also helps control who can use the data.
+
+If the database is used for real student information, I think the DBA should first focus on security and user access. Student information should not be seen or changed by just anyone. The DBA can make accounts for the people who need to use the database and give them the right access. For example, a teacher may need to see student information, while another person may not need access to it.
+
+This is important because student information should be kept safe. MySQL makes this easier because the DBA can control who can see or change the data. This is one reason why a database is better than keeping information in separate files.
