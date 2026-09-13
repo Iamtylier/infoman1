@@ -60,11 +60,11 @@ Why it's a problem: storing a phone number as a number is bad because it can dro
 
 How DESCRIBE showed it: running DESCRIBE owner; before the fix showed phone\_number as int in the Type column, which confirmed the mistake was actually there.
 
-Screenshot (before): screenshots/task5\_describe\_before.png
+Screenshot (before): screenshots/task5\_describe\_owner\_before.png
 
 The fix: ALTER TABLE owner MODIFY COLUMN phone\_number VARCHAR(20);
 
 After running that, DESCRIBE owner; showed phone\_number as varchar(20) instead, so the fix worked.
 
-Screenshot (after): screenshots/task5\_describe\_after.png
+Screenshot (after): screenshots/task5\_describe\_owner\_after.png
 
