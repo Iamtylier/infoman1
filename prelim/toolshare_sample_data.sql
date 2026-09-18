@@ -24,11 +24,11 @@ INSERT INTO Certification (name) VALUES
 
 -- Member (5)
 INSERT INTO Member (name, phone, membership_start_date) VALUES
-('Maria Santos', '0917-555-0142', '2024-11-03'),
-('Ben Alcantara', '0918-555-0087', '2025-02-14'),
-('Carla Dizon', '0920-555-0199', '2023-08-21'),
-('Deo Ramirez', '0999-555-0033', '2025-06-30'),
-('Elena Yu', '0917-555-0256', '2024-01-10');
+('Son Guko', '0917-555-0142', '2024-11-03'),
+('Roco Tady', '0918-555-0087', '2025-02-14'),
+('Hayme Rizal', '0920-555-0199', '2023-08-21'),
+('Arki Gladiola', '0999-555-0033', '2025-06-30'),
+('Mondragon', '0917-555-0256', '2024-01-10');
 
 -- Tool (8)  -- tool_id 1..8 in this order
 INSERT INTO Tool (name, category, purchase_date, location_code) VALUES
