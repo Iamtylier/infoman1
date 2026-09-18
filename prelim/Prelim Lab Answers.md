@@ -26,7 +26,7 @@ The broken query was:
 
 SELECT borrow_date, return_date
 FROM borrowing
-WHERE member_name = 'Maria Santos';
+WHERE member_name = 'Son Guko';
 Why it fails
 
 Borrowing does not have a member_name column. A member's name only lives in the Member table; Borrowing only stores member_id, a foreign key pointing back to Member. This is a normalization decision from Week 3 - repeating a member's name in every borrowing row would duplicate data and risk it going out of sync if a name were ever corrected. Week 4's DDL enforces this: Borrowing was never given a member_name column, so MySQL rejects the query with "Unknown column 'member_name' in 'where clause'." It is not that the query returns zero rows - the column simply does not exist.
@@ -35,7 +35,7 @@ Corrected queries
 -- Step 1: find the member's id
 SELECT member_id
 FROM Member
-WHERE name = 'Maria Santos';
+WHERE name = 'Son Guko';
 -- returns member_id = 1
 
 -- Step 2: use that id to filter Borrowing
