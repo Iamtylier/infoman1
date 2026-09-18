@@ -17,7 +17,7 @@ SELECT borrowing_id, member_id, tool_id, borrow_date, return_date
 FROM Borrowing
 WHERE return_date IS NULL;
 
--- 4. All borrowing records for one specific member (Maria Santos, member_id 1)
+-- 4. All borrowing records for one specific member (Son Guko, member_id 1)
 SELECT borrowing_id, tool_id, borrow_date, return_date
 FROM Borrowing
 WHERE member_id = 1;
