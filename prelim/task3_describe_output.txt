@@ -1,0 +1,53 @@
+SHOW TABLES;
+Tables in toolshare_prelim:
+borrowing
+certification
+member
+membercertification
+storagelocation
+tool
+toolcertification
+
+
+DESCRIBE Member;
+member_id              int            NOT NULL   PRIMARY KEY   auto_increment
+name                   varchar(100)   NOT NULL
+phone                  varchar(20)    NULL
+membership_start_date  date           NOT NULL
+
+
+DESCRIBE StorageLocation;
+location_code   varchar(10)    NOT NULL   PRIMARY KEY
+description     varchar(255)   NULL
+
+
+DESCRIBE Tool;
+tool_id         int            NOT NULL   PRIMARY KEY   auto_increment
+name            varchar(100)   NOT NULL
+category        varchar(50)    NOT NULL
+purchase_date   date           NOT NULL
+location_code   varchar(10)    NOT NULL   FOREIGN KEY
+
+
+DESCRIBE Certification;
+cert_id   int            NOT NULL   PRIMARY KEY   auto_increment
+name      varchar(100)   NOT NULL   UNIQUE
+
+
+DESCRIBE Borrowing;
+borrowing_id   int    NOT NULL   PRIMARY KEY   auto_increment
+member_id      int    NOT NULL   FOREIGN KEY
+tool_id        int    NOT NULL   FOREIGN KEY
+borrow_date    date   NOT NULL
+return_date    date   NULL
+
+
+DESCRIBE ToolCertification;
+tool_id   int   NOT NULL   PRIMARY KEY, FOREIGN KEY
+cert_id   int   NOT NULL   PRIMARY KEY, FOREIGN KEY
+
+
+DESCRIBE MemberCertification;
+member_id         int    NOT NULL   PRIMARY KEY, FOREIGN KEY
+cert_id           int    NOT NULL   PRIMARY KEY, FOREIGN KEY
+completion_date   date   NOT NULL
