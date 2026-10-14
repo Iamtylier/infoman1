@@ -50,17 +50,17 @@ INSERT INTO ToolCertification (tool_id, cert_id) VALUES
 
 -- MemberCertification: which members have completed which certifications
 INSERT INTO MemberCertification (member_id, cert_id, completion_date) VALUES
-(1, 1, '2024-12-01'),  -- Maria Santos - Chainsaw Safety
-(1, 3, '2025-01-15'),  -- Maria Santos - Power Tool Handling
-(2, 2, '2025-03-01'),  -- Ben Alcantara - Welding Basics
-(3, 4, '2023-09-10'),  -- Carla Dizon - Ladder & Height Safety
-(5, 3, '2024-02-20');  -- Elena Yu - Power Tool Handling
+(1, 1, '2024-12-01'),  -- Son Guko - Chainsaw Safety
+(1, 3, '2025-01-15'),  -- Son Guko - Power Tool Handling
+(2, 2, '2025-03-01'),  -- Roco Tady - Welding Basics
+(3, 4, '2023-09-10'),  -- Hayme Rizal - Ladder & Height Safety
+(5, 3, '2024-02-20');  -- Mondragon - Power Tool Handling
 
 -- Borrowing (6)
 INSERT INTO Borrowing (member_id, tool_id, borrow_date, return_date) VALUES
-(1, 2, '2025-01-05', '2025-01-10'),  -- Maria Santos borrowed Chainsaw (returned)
-(1, 1, '2025-03-02', NULL),          -- Maria Santos borrowed Circular Saw (on loan)
-(2, 4, '2025-03-15', '2025-03-20'),  -- Ben Alcantara borrowed Welding Machine (returned)
-(3, 7, '2023-10-01', '2023-10-05'),  -- Carla Dizon borrowed Extension Ladder (returned)
-(4, 6, '2025-07-02', '2025-07-04'),  -- Deo Ramirez borrowed Wheelbarrow (returned)
-(5, 5, '2024-08-01', NULL);          -- Elena Yu borrowed Pruning Shears (on loan)
+(1, 2, '2025-01-05', '2025-01-10'),  -- Son Guko borrowed Chainsaw (returned)
+(1, 1, '2025-03-02', NULL),          -- Son Guko borrowed Circular Saw (on loan)
+(2, 4, '2025-03-15', '2025-03-20'),  -- Roco Tady borrowed Welding Machine (returned)
+(3, 7, '2023-10-01', '2023-10-05'),  -- Hayme Rizal borrowed Extension Ladder (returned)
+(4, 6, '2025-07-02', '2025-07-04'),  -- Arki Gladiola borrowed Wheelbarrow (returned)
+(5, 5, '2024-08-01', NULL);          -- Mondragon borrowed Pruning Shears (on loan)
