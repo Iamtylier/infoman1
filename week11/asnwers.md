@@ -141,8 +141,6 @@ ORDER BY s.student_id, c.course_id;
 ```
 Returns 3 complete rows: Ana Cruz (Database Systems 1.50, Web Development 1.25) and Ben Lim (Database Systems 1.75), all in Computing Studies.
 
----
-
 ## Task 5: Reflection
 
 I would normalize the enrollment system to 3NF because it records changing, shared facts, and each fact should live in exactly one place. In Task 1, department D01 and its name were stored on all three rows, so renaming the department meant updating every row, and missing one would leave conflicting names. After splitting out departments, the name exists once.
