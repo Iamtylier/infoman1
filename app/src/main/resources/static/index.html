@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Library: Books</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    table { border-collapse: collapse; width: 100%; max-width: 60rem; }
+    th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: #f2f2f2; }
+    #status { margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Campus Library: Books</h1>
+  <p id="status">Loading...</p>
+  <table id="books" hidden>
+    <thead>
+      <tr><th>ID</th><th>Title</th><th>Author</th><th>Category</th><th>Available</th><th>Total</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const status = document.getElementById('status');
+    const table = document.getElementById('books');
+    const body = table.querySelector('tbody');
+
+    fetch('/api/books')
+      .then(response => {
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+        return response.json();
+      })
+      .then(books => {
+        for (const b of books) {
+          const row = document.createElement('tr');
+          for (const value of [b.id, b.title, b.author, b.category, b.availableCopies, b.totalCopies]) {
+            const cell = document.createElement('td');
+            cell.textContent = value;
+            row.appendChild(cell);
+          }
+          body.appendChild(row);
+        }
+        status.textContent = books.length + ' books loaded from MySQL.';
+        table.hidden = false;
+      })
+      .catch(error => {
+        status.textContent = 'Could not load books: ' + error.message;
+      });
+  </script>
+</body>
+</html>
