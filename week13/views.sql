@@ -16,7 +16,7 @@ JOIN category c ON c.id = b.category_id;
 
 CREATE OR REPLACE VIEW book_availability AS
 SELECT b.id AS book_id,
-       b.title,
+       b.title,s
        b.author,
        c.name AS category_name,
        b.total_copies,
