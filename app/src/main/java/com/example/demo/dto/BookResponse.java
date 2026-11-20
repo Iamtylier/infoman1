@@ -5,6 +5,7 @@ public record BookResponse(
         String title,
         String author,
         String isbn,
+        Long categoryId,
         String category,
         int totalCopies,
         int availableCopies) {

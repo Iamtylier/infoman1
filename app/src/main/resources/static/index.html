@@ -3,51 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Library: Books</title>
+  <title>Campus Library</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; }
-    table { border-collapse: collapse; width: 100%; max-width: 60rem; }
-    th, td { border: 1px solid #ccc; padding: 0.5rem 0.75rem; text-align: left; }
+    body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 70rem; }
+    h1 { margin-bottom: 0.25rem; }
+    section { margin: 2rem 0; padding-top: 1rem; border-top: 2px solid #ddd; }
+    table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left; }
     th { background: #f2f2f2; }
-    #status { margin: 1rem 0; }
+    form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; margin: 0.75rem 0; }
+    label { display: flex; flex-direction: column; font-size: 0.85rem; }
+    input, select, button { padding: 0.35rem 0.5rem; font-size: 0.95rem; }
+    .msg { min-height: 1.4rem; margin: 0.5rem 0; font-weight: 600; }
+    .msg.ok { color: #1a7f37; }
+    .msg.err { color: #c62828; }
+    td button { margin-right: 0.25rem; }
   </style>
 </head>
 <body>
-  <h1>Campus Library: Books</h1>
-  <p id="status">Loading...</p>
-  <table id="books" hidden>
-    <thead>
-      <tr><th>ID</th><th>Title</th><th>Author</th><th>Category</th><th>Available</th><th>Total</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h1>Campus Library</h1>
+  <p>Books, members and loans, stored in MySQL.</p>
+
+  <section>
+    <h2>Books</h2>
+    <form id="book-form">
+      <input type="hidden" id="book-id">
+      <label>Category <select id="book-category"></select></label>
+      <label>Title <input id="book-title" maxlength="150"></label>
+      <label>Author <input id="book-author" maxlength="100"></label>
+      <label>ISBN <input id="book-isbn" maxlength="20"></label>
+      <label>Total copies <input id="book-total" type="number" min="0"></label>
+      <button type="submit" id="book-submit">Add book</button>
+      <button type="button" id="book-cancel">Clear</button>
+    </form>
+    <div id="book-msg" class="msg"></div>
+    <table>
+      <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>ISBN</th><th>Category</th><th>Available</th><th>Total</th><th>Actions</th></tr></thead>
+      <tbody id="book-rows"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Members</h2>
+    <form id="member-form">
+      <input type="hidden" id="member-id">
+      <label>Full name <input id="member-name" maxlength="100"></label>
+      <label>Email <input id="member-email" maxlength="120"></label>
+      <button type="submit" id="member-submit">Add member</button>
+      <button type="button" id="member-cancel">Clear</button>
+    </form>
+    <div id="member-msg" class="msg"></div>
+    <table>
+      <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Joined</th><th>Actions</th></tr></thead>
+      <tbody id="member-rows"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Borrow a book</h2>
+    <form id="borrow-form">
+      <label>Book <select id="borrow-book"></select></label>
+      <label>Member <select id="borrow-member"></select></label>
+      <label><span><input type="checkbox" id="borrow-fail"> Simulate failure after both writes (demo)</span></label>
+      <button type="submit">Borrow</button>
+    </form>
+    <div id="borrow-msg" class="msg"></div>
+    <table>
+      <thead><tr><th>Loan</th><th>Book</th><th>Member</th><th>Loaned</th><th>Due</th><th>Returned</th></tr></thead>
+      <tbody id="loan-rows"></tbody>
+    </table>
+  </section>
 
   <script>
-    const status = document.getElementById('status');
-    const table = document.getElementById('books');
-    const body = table.querySelector('tbody');
+    const $ = id => document.getElementById(id);
 
-    fetch('/api/books')
-      .then(response => {
-        if (!response.ok) throw new Error('Server returned ' + response.status);
-        return response.json();
-      })
-      .then(books => {
-        for (const b of books) {
-          const row = document.createElement('tr');
-          for (const value of [b.id, b.title, b.author, b.category, b.availableCopies, b.totalCopies]) {
-            const cell = document.createElement('td');
-            cell.textContent = value;
-            row.appendChild(cell);
-          }
-          body.appendChild(row);
-        }
-        status.textContent = books.length + ' books loaded from MySQL.';
-        table.hidden = false;
-      })
-      .catch(error => {
-        status.textContent = 'Could not load books: ' + error.message;
+    async function api(url, options) {
+      const response = await fetch(url, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
       });
+      if (response.status === 204) return null;
+      let body = null;
+      try { body = await response.json(); } catch (e) { body = null; }
+      if (!response.ok) {
+        throw new Error(body && body.message ? body.message : 'Request failed (' + response.status + ')');
+      }
+      return body;
+    }
+
+    function show(id, text, isError) {
+      const el = $(id);
+      el.textContent = text;
+      el.className = 'msg ' + (isError ? 'err' : 'ok');
+    }
+
+    function cell(row, value) {
+      const td = document.createElement('td');
+      td.textContent = value === null || value === undefined ? '' : value;
+      row.appendChild(td);
+    }
+
+    function button(label, onClick) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    // ---------- books ----------
+    async function loadCategories() {
+      const categories = await api('/api/categories');
+      const select = $('book-category');
+      select.replaceChildren();
+      for (const c of categories) {
+        const option = document.createElement('option');
+        option.value = c.id;
+        option.textContent = c.name;
+        select.appendChild(option);
+      }
+    }
+
+    async function loadBooks() {
+      const books = await api('/api/books');
+      const body = $('book-rows');
+      body.replaceChildren();
+      for (const b of books) {
+        const row = document.createElement('tr');
+        [b.id, b.title, b.author, b.isbn, b.category, b.availableCopies, b.totalCopies].forEach(v => cell(row, v));
+        const actions = document.createElement('td');
+        actions.appendChild(button('Edit', () => editBook(b)));
+        actions.appendChild(button('Delete', () => deleteBook(b)));
+        row.appendChild(actions);
+        body.appendChild(row);
+      }
+      const select = $('borrow-book');
+      select.replaceChildren();
+      for (const b of books) {
+        const option = document.createElement('option');
+        option.value = b.id;
+        option.textContent = b.id + ' - ' + b.title + ' (' + b.availableCopies + ' available)';
+        select.appendChild(option);
+      }
+    }
+
+    function editBook(b) {
+      $('book-id').value = b.id;
+      $('book-category').value = b.categoryId;
+      $('book-title').value = b.title;
+      $('book-author').value = b.author;
+      $('book-isbn').value = b.isbn;
+      $('book-total').value = b.totalCopies;
+      $('book-submit').textContent = 'Save changes';
+      show('book-msg', 'Editing book ' + b.id, false);
+    }
+
+    function clearBookForm() {
+      $('book-form').reset();
+      $('book-id').value = '';
+      $('book-submit').textContent = 'Add book';
+    }
+
+    async function deleteBook(b) {
+      if (!confirm('Delete "' + b.title + '"?')) return;
+      try {
+        await api('/api/books/' + b.id, { method: 'DELETE' });
+        show('book-msg', 'Book ' + b.id + ' deleted.', false);
+        await loadBooks();
+      } catch (e) {
+        show('book-msg', e.message, true);
+      }
+    }
+
+    $('book-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const id = $('book-id').value;
+      const payload = {
+        categoryId: $('book-category').value === '' ? null : Number($('book-category').value),
+        title: $('book-title').value,
+        author: $('book-author').value,
+        isbn: $('book-isbn').value,
+        totalCopies: $('book-total').value === '' ? null : Number($('book-total').value)
+      };
+      try {
+        const saved = await api(id ? '/api/books/' + id : '/api/books', {
+          method: id ? 'PUT' : 'POST',
+          body: JSON.stringify(payload)
+        });
+        show('book-msg', (id ? 'Book updated: ' : 'Book added: ') + saved.title + ' (id ' + saved.id + ')', false);
+        clearBookForm();
+        await loadBooks();
+      } catch (e) {
+        show('book-msg', e.message, true);
+      }
+    });
+    $('book-cancel').addEventListener('click', clearBookForm);
+
+    // ---------- members ----------
+    async function loadMembers() {
+      const members = await api('/api/members');
+      const body = $('member-rows');
+      body.replaceChildren();
+      for (const m of members) {
+        const row = document.createElement('tr');
+        [m.id, m.fullName, m.email, m.joinedOn].forEach(v => cell(row, v));
+        const actions = document.createElement('td');
+        actions.appendChild(button('Edit', () => editMember(m)));
+        actions.appendChild(button('Delete', () => deleteMember(m)));
+        row.appendChild(actions);
+        body.appendChild(row);
+      }
+      const select = $('borrow-member');
+      select.replaceChildren();
+      for (const m of members) {
+        const option = document.createElement('option');
+        option.value = m.id;
+        option.textContent = m.id + ' - ' + m.fullName;
+        select.appendChild(option);
+      }
+    }
+
+    function editMember(m) {
+      $('member-id').value = m.id;
+      $('member-name').value = m.fullName;
+      $('member-email').value = m.email;
+      $('member-submit').textContent = 'Save changes';
+      show('member-msg', 'Editing member ' + m.id, false);
+    }
+
+    function clearMemberForm() {
+      $('member-form').reset();
+      $('member-id').value = '';
+      $('member-submit').textContent = 'Add member';
+    }
+
+    async function deleteMember(m) {
+      if (!confirm('Delete "' + m.fullName + '"?')) return;
+      try {
+        await api('/api/members/' + m.id, { method: 'DELETE' });
+        show('member-msg', 'Member ' + m.id + ' deleted.', false);
+        await loadMembers();
+      } catch (e) {
+        show('member-msg', e.message, true);
+      }
+    }
+
+    $('member-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const id = $('member-id').value;
+      const payload = { fullName: $('member-name').value, email: $('member-email').value };
+      try {
+        const saved = await api(id ? '/api/members/' + id : '/api/members', {
+          method: id ? 'PUT' : 'POST',
+          body: JSON.stringify(payload)
+        });
+        show('member-msg', (id ? 'Member updated: ' : 'Member added: ') + saved.fullName + ' (id ' + saved.id + ')', false);
+        clearMemberForm();
+        await loadMembers();
+      } catch (e) {
+        show('member-msg', e.message, true);
+      }
+    });
+    $('member-cancel').addEventListener('click', clearMemberForm);
+
+    // ---------- loans ----------
+    async function loadLoans() {
+      const loans = await api('/api/loans');
+      const body = $('loan-rows');
+      body.replaceChildren();
+      for (const l of loans) {
+        const row = document.createElement('tr');
+        [l.id, l.bookTitle, l.memberName, l.loanedOn, l.dueOn, l.returnedOn].forEach(v => cell(row, v));
+        body.appendChild(row);
+      }
+    }
+
+    $('borrow-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const bookId = $('borrow-book').value;
+      const memberId = $('borrow-member').value;
+      const fail = $('borrow-fail').checked;
+      try {
+        const loan = await api('/api/loans?bookId=' + encodeURIComponent(bookId)
+          + '&memberId=' + encodeURIComponent(memberId)
+          + '&simulateFailure=' + fail, { method: 'POST' });
+        show('borrow-msg', 'Loan ' + loan.id + ' created for "' + loan.bookTitle + '", due ' + loan.dueOn + '.', false);
+      } catch (e) {
+        show('borrow-msg', e.message, true);
+      }
+      await loadBooks();
+      await loadLoans();
+    });
+
+    // ---------- start ----------
+    (async () => {
+      try {
+        await loadCategories();
+        await loadBooks();
+        await loadMembers();
+        await loadLoans();
+      } catch (e) {
+        show('book-msg', 'Could not load data: ' + e.message, true);
+      }
+    })();
   </script>
 </body>
 </html>
